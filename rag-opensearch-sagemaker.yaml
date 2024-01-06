@@ -33,7 +33,7 @@ Metadata:
 Parameters:
   OpenSearchUsername:
     AllowedPattern: '^[a-zA-Z0-9]+$'
-    Default: opensearchuser
+    Default: admin
     Description: User name for the account that will be added to the OpenSearch cluster.
     MaxLength: '25'
     MinLength: '5'
@@ -46,7 +46,7 @@ Parameters:
     NoEcho: 'true'
     Type: String
   OpenSearchIndexName:
-    Default: rag_demo_opensearch_embeddings
+    Default: rag_embeddings
     Type: String    
     Description: Name of the OpenSearch index for storing embeddings.
   AppName:
@@ -85,11 +85,11 @@ Parameters:
 Mappings: 
   RegionMap:
     us-east-1:
-      BUCKET: aws-blogs-artifacts-public
-      KEY: "artifacts/ML-14328/function.zip"
+      BUCKET: sagemaker-demos-00
+      KEY: "lambdas/function.zip"
     us-west-2:
-      BUCKET: aws-bigdata-blog-replica-us-west-2
-      KEY: "artifacts/ML-14328/function.zip"
+      BUCKET: sagemaker-demos-00
+      KEY: "lambdas/function.zip"
 
 Resources:
   OpenSearchSecret:
@@ -99,19 +99,12 @@ Resources:
       Description: OpenSearch username and password
       SecretString: !Sub '{ "username" : "${OpenSearchUsername}", "password" : "${OpenSearchPassword}" }'
 
-  CodeRepository:
-    Type: AWS::SageMaker::CodeRepository
-    Properties:
-      GitConfig:
-        RepositoryUrl: https://github.com/aws-samples/llm-apps-workshop
-
   NotebookInstance:
     Type: AWS::SageMaker::NotebookInstance
     Properties:
       NotebookInstanceName: !Ref SageMakerNotebookName
       InstanceType: ml.t3.2xlarge
       RoleArn: !GetAtt Role.Arn
-      DefaultCodeRepository: !GetAtt CodeRepository.CodeRepositoryName
 
   Role:
     Type: AWS::IAM::Role
@@ -180,7 +173,7 @@ Resources:
         InstanceType: "r6g.xlarge.search"
       EBSOptions:
         EBSEnabled: True
-        VolumeSize: 100
+        VolumeSize: 500
         VolumeType: 'gp3'
       AdvancedSecurityOptions:
         AnonymousAuthEnabled: False
@@ -201,7 +194,7 @@ Resources:
     Type: "AWS::SageMaker::Endpoint"
     Properties:
       EndpointName: !Sub
-      - '${AppName}-flan-t5-xxl-endpoint-${RandomGUID}'
+      - '${AppName}-flan-t5-xl-endpoint-${RandomGUID}'
       - { RandomGUID: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId ]]]] }
       EndpointConfigName: !GetAtt LLMEndpointConfig.EndpointConfigName
 
@@ -209,12 +202,12 @@ Resources:
     Type: "AWS::SageMaker::EndpointConfig"
     Properties:
       EndpointConfigName: !Sub
-      - '${AppName}-flan-t5-xxl-endpoint-${RandomGUID}'
+      - '${AppName}-flan-t5-xl-endpoint-${RandomGUID}'
       - { RandomGUID: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId ]]]] }
       ProductionVariants:
         - InitialInstanceCount: 1
           InitialVariantWeight: 1.0
-          InstanceType: "ml.g5.12xlarge"
+          InstanceType: "ml.g5.2xlarge"
           ModelName: !GetAtt LLMModel.ModelName
           VariantName: !GetAtt LLMModel.ModelName
     Metadata:
@@ -227,10 +220,10 @@ Resources:
     Type: "AWS::SageMaker::Model"
     Properties:
       ModelName: !Sub
-      - '${AppName}-flan-t5-xxl-model-${RandomGUID}'
+      - '${AppName}-flan-t5-xl-model-${RandomGUID}'
       - { RandomGUID: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId ]]]] }
       PrimaryContainer:
-        ModelDataUrl: !Sub "s3://jumpstart-cache-prod-${AWS::Region}/huggingface-infer/prepack/v1.0.1/infer-prepack-huggingface-text2text-flan-t5-xxl.tar.gz"
+        ModelDataUrl: !Sub "s3://jumpstart-cache-prod-${AWS::Region}/huggingface-infer/prepack/v1.0.1/infer-prepack-huggingface-text2text-flan-t5-xl.tar.gz"
         Image: !Sub "763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/pytorch-inference:1.12.0-gpu-py38"
         Environment: {"TS_DEFAULT_WORKERS_PER_MODEL": "1"}
         Mode: "SingleModel"
@@ -240,7 +233,7 @@ Resources:
     Type: "AWS::SageMaker::Endpoint"
     Properties:
       EndpointName: !Sub
-      - '${AppName}-gpt-j-6b-endpoint-${RandomGUID}'
+      - '${AppName}-gpt-j-6b-fp16-endpoint-${RandomGUID}'
       - { RandomGUID: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId ]]]] }
       EndpointConfigName: !GetAtt EmbeddingEndpointConfig.EndpointConfigName
 
@@ -248,12 +241,12 @@ Resources:
     Type: "AWS::SageMaker::EndpointConfig"
     Properties:
       EndpointConfigName: !Sub
-      - '${AppName}-gpt-j-6b-endppoint-${RandomGUID}'
+      - '${AppName}-gpt-j-6b-fp16-endppoint-${RandomGUID}'
       - { RandomGUID: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId ]]]] }
       ProductionVariants:
         - InitialInstanceCount: 1
           InitialVariantWeight: 1.0
-          InstanceType: "ml.g5.24xlarge"
+          InstanceType: "ml.g5.2xlarge"
           ModelName: !GetAtt EmbeddingModel.ModelName
           VariantName: !GetAtt EmbeddingModel.ModelName
     Metadata:
@@ -266,10 +259,10 @@ Resources:
     Type: "AWS::SageMaker::Model"
     Properties:
       ModelName: !Sub
-      - '${AppName}-gpt-j-6b-model-${RandomGUID}'
+      - '${AppName}-gpt-j-6b-fp16-model-${RandomGUID}'
       - { RandomGUID: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId ]]]] }
       PrimaryContainer:
-        ModelDataUrl: !Sub "s3://jumpstart-cache-prod-${AWS::Region}/huggingface-infer/prepack/v1.0.0/infer-prepack-huggingface-textembedding-gpt-j-6b.tar.gz"
+        ModelDataUrl: !Sub "s3://jumpstart-cache-prod-${AWS::Region}/huggingface-infer/prepack/v1.0.0/infer-prepack-huggingface-textembedding-gpt-j-6b-fp16.tar.gz"
         Image: !Sub "763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/pytorch-inference:1.12.0-gpu-py38"
         Environment: {"TS_DEFAULT_WORKERS_PER_MODEL": "2"}
         Mode: "SingleModel"
@@ -305,7 +298,6 @@ Resources:
       ResourceId: !Ref ProxyResource
       RestApiId: !Ref "APIGateway"
 
-
   APIGatewayDeployment:
     Type: "AWS::ApiGateway::Deployment"
     DependsOn:
@@ -324,8 +316,8 @@ Resources:
         S3Bucket: !FindInMap [RegionMap, !Ref "AWS::Region", BUCKET]
         S3Key: !FindInMap [RegionMap, !Ref "AWS::Region", KEY]
       Handler: app.main.handler
-      MemorySize: 512
-      Timeout: 60
+      MemorySize: 8192
+      Timeout: 600
       Role: !GetAtt LambdaIAMRole.Arn
       Tags: 
         -
@@ -404,7 +396,7 @@ Resources:
     Type: "AWS::Logs::LogGroup"
     Properties:
       LogGroupName: !Sub "/aws/lambda/${LambdaFunctionName}"
-      RetentionInDays: 90
+      RetentionInDays: 30
 
 Outputs:
   OpenSearchDomainEndpoint:
