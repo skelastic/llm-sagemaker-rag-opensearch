@@ -29,7 +29,7 @@ Metadata:
         default: API Gateway Name
       SageMakerNotebookName:
         default: SageMaker Notebook Name
-      
+
 Parameters:
   OpenSearchUsername:
     AllowedPattern: '^[a-zA-Z0-9]+$'
@@ -47,7 +47,7 @@ Parameters:
     Type: String
   OpenSearchIndexName:
     Default: rag_embeddings
-    Type: String    
+    Type: String
     Description: Name of the OpenSearch index for storing embeddings.
   AppName:
     Default: OpenSearchSageMakerRAG
@@ -65,7 +65,7 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+'
     Description: Name of the APIGateway
   SageMakerNotebookName:
-    Default: RAGSageMakerNotebook
+    Default: rag-notebook
     Type: String
     Description: Enter name of SageMaker Notebook instance. The notebook name must _not_ already exist in your AWS account/region.
     MinLength: 1
@@ -75,14 +75,14 @@ Parameters:
   SageMakerIAMRole:
     Description: Name of IAM role that will be created by this cloud formation template. The role name must _not_ already exist in your AWS account.
     Type: String
-    Default: "RAGAppIAMRole"   
+    Default: "RAGAppIAMRole"
 
   ApiStageName:
     Description: The API Gateway API stage name
     Type: String
     Default: prod
 
-Mappings: 
+Mappings:
   RegionMap:
     us-east-1:
       BUCKET: sagemaker-demos-00
@@ -181,7 +181,7 @@ Resources:
         InternalUserDatabaseEnabled: True
         MasterUserOptions:
           MasterUserName: !Sub ${OpenSearchUsername}
-          MasterUserPassword: !Sub ${OpenSearchPassword} 
+          MasterUserPassword: !Sub ${OpenSearchPassword}
       NodeToNodeEncryptionOptions:
         Enabled: True
       EncryptionAtRestOptions:
@@ -319,7 +319,7 @@ Resources:
       MemorySize: 8192
       Timeout: 600
       Role: !GetAtt LambdaIAMRole.Arn
-      Tags: 
+      Tags:
         -
           Key: Project
           Value: !Ref AppName
@@ -390,7 +390,6 @@ Resources:
                   - secretsmanager:GetSecretValue
                 Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
           PolicyName: "lambdaVPC"
-      
 
   lambdaLogGroup:
     Type: "AWS::Logs::LogGroup"
@@ -436,7 +435,7 @@ Outputs:
   EmbeddingEndpointName:
     Description: Name of the LLM endpoint
     Value: !GetAtt EmbeddingEndpoint.EndpointName
-  
+
   OpenSearchSecret:
     Description: Name of the OpenSearch secret in Secrets Manager
     Value: !Ref OpenSearchSecret
