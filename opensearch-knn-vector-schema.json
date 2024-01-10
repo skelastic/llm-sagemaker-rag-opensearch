@@ -1,0 +1,52 @@
+{
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "embeddings_model": {
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          },
+          "type": "text"
+        },
+        "source": {
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          },
+          "type": "text"
+        },
+        "timestamp": {
+          "type": "float"
+        }
+      }
+    },
+    "text": {
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      },
+      "type": "text"
+    },
+    "vector_field": {
+      "dimension": 4096,
+      "method": {
+        "engine": "nmslib",
+        "space_type": "l2",
+        "name": "hnsw",
+        "parameters": {
+          "ef_construction": 512,
+          "m": 16
+        }
+      },
+      "type": "knn_vector"
+    }
+  }
+}
