@@ -1,5 +1,3 @@
-# llm-sagemaker-rag-opensearch
-
 # QA with LLM and RAG
 
 CloudFormation Deployment:
@@ -29,29 +27,3 @@ CloudFormation Deployment:
     streamlit run webapp.py    
     ```
     This will start a streamlit app on SageMaker Studio, you can access the app by opening the following URL in a new browser tab `https://SAGEMAKER-STUDIO-URL/jupyter/default/proxy/8501/webapp`
-
-### Building your version of the Lambda
-
-1. Open a new Terminal in the SageMaker Notebook and change to the `api` directory using the following command:
-
-    ```
-    cd /home/ec2-user/SageMaker/repos/llm-sagemaker-rag-opensearch/api
-    ```
-
-1. Create a `conda` environment for `Python 3.9`.
-
-    ```{{bash}}
-
-    conda create -n py39 python=3.9 -y
-
-    # activate the environment
-    source activate py39
-    ```
-
-1. Package and upload `function.zip` to the SageMaker bucket for your region.
-
-    ```{{bash}}
-    ./deploy.sh
-    ```
-
-1. Update the code for the Lambda function to point to the S3 file uploaded in the step above.
